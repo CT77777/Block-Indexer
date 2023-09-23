@@ -17,7 +17,7 @@ type Transaction struct {
 	Value string
 	Input_Data string `gorm:"type:LONGTEXT"`
 	Block_Number uint64
-	Log []Log `gorm:"foreignKey:Transaction_ID;references:ID"`
+	Logs []Log `gorm:"foreignKey:Transaction_ID;references:ID"`
 }
 
 type Log struct {
