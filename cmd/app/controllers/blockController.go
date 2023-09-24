@@ -91,3 +91,64 @@ func GetBlockAndTxs(c *gin.Context) {
 
 	c.JSON(200, blockAndTxs)
 }
+
+type TxAndLog struct {
+	Hash string 
+	From string 
+	To string 
+	Nonce uint64
+	Value string
+	Input_Data string 
+	Data string
+}
+
+type TxAndLogs struct {
+	Hash string `json:"tx_hash"`
+	From string `json:"from"`
+	To string `json:"to"`
+	Nonce uint64 `json:"nonce"`
+	Value string `json:"value"`
+	Input_Data string `json:"data"`
+	Logs []EventLog `json:"logs"`
+}
+
+type EventLog struct {
+	Index uint8 `json:"index"`
+	Data string `json:"data"`
+}
+
+// get the specified transaction, include all event logs
+func GetTxAndLogs(c *gin.Context) {
+
+	txHash := c.Param("txHash")
+
+	var txAndLog []TxAndLog
+
+	result := initializers.DB.Table("transactions").Select("transactions.*", "logs.data").Where("hash = ?", txHash).Joins("INNER JOIN logs ON transactions.id = logs.transaction_id").Scan(&txAndLog)
+
+	if result.Error != nil {
+		log.Printf("Error: %v", result.Error)
+
+		c.JSON(500, gin.H{"Error" : "Internal server error"})
+		return 
+	}
+
+	var txAndLogs TxAndLogs
+
+	for index, value := range txAndLog {
+		if index == 0 {
+			txAndLogs.Hash = value.Hash
+			txAndLogs.From = value.From
+			txAndLogs.To = value.To
+			txAndLogs.Nonce = value.Nonce
+			txAndLogs.Value = value.Value
+			txAndLogs.Input_Data = value.Input_Data
+		}
+
+		var log EventLog = EventLog{Index : uint8(index), Data : value.Data}
+
+		txAndLogs.Logs = append(txAndLogs.Logs, log)
+	}
+
+	c.JSON(200, txAndLogs)
+}

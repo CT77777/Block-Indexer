@@ -20,6 +20,7 @@ func main() {
 
 	app.GET("/blocks", controllers.GetBlocks)
 	app.GET("/blocks/:id", controllers.GetBlockAndTxs)
+	app.GET("/transaction/:txHash", controllers.GetTxAndLogs)
 
 	app.Run()
 }
