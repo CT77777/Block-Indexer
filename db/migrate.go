@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/CT77777/Block-Indexer/db/models"
 	"github.com/CT77777/Block-Indexer/initializers"
+	"github.com/CT77777/Block-Indexer/models"
 )
 
 

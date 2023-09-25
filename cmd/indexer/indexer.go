@@ -8,8 +8,8 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/CT77777/Block-Indexer/db/models"
 	"github.com/CT77777/Block-Indexer/initializers"
+	"github.com/CT77777/Block-Indexer/models"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 )
@@ -28,6 +28,7 @@ func worker(id int, jobs <-chan int, results chan<- models.Block) {
 
 		fmt.Printf("Block# %v worker_%v\n", blockNumber, id)
 		
+		// get block data by block number
 		block, err := initializers.EthClient.BlockByNumber(context.TODO(), blockNumber)
 
 		if err != nil {
@@ -48,14 +49,16 @@ func worker(id int, jobs <-chan int, results chan<- models.Block) {
 				continue
 			}
 
-			receipt, err := initializers.EthClient.TransactionReceipt(context.TODO(), common.HexToHash(hash))
-
-			if err != nil {
-				log.Printf(`Failed to fetch event logs of Transaction %v`, hash)
-				continue
-			}
-
 			if isPending != true {
+
+				// get event logs by transaction hash
+				receipt, err := initializers.EthClient.TransactionReceipt(context.TODO(), common.HexToHash(hash))
+
+				if err != nil {
+					log.Printf(`Failed to fetch event logs of Transaction %v`, hash)
+					continue
+				}
+
 				var logs []models.Log
 
 				for _, log := range receipt.Logs {
@@ -149,11 +152,13 @@ func scanBlocks(start int, end int, workerCount int, batchInsertCount int) {
 
 // main execution function
 func main() {
-	start := 33585900 // start block 
-	end := 33585920 // end block
-	workerCountOld := 5 // worker count to scan blocks in parallel for historical blocks
+	// parameters for scanning historical blocks
+	start := 33647000 // start block number
+	end := 33647760 // end block number
+	workerCountOld := 10 // worker count to scan blocks in parallel for historical blocks
 	batchInsertCountOld := 10 // total block data count will be insert into DB every I/O for historical blocks
 
+	// parameters for keeping scanning the latest blocks
 	workerCountNew := 1 // worker count to scan blocks in parallel for new blocks
 	batchInsertCountNew := 1 // total block data count will be insert into DB every I/O for new blocks
 	fetchInterval := 5 * time.Second // periodically fetching interval
