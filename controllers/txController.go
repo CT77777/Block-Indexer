@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"log"
+	"regexp"
 
 	"github.com/CT77777/Block-Indexer/initializers"
 	"github.com/CT77777/Block-Indexer/models"
@@ -10,8 +11,22 @@ import (
 
 // get the specified transaction, include all event logs
 func GetTxAndLogs(c *gin.Context) {
+	defer func() {
+        if r := recover(); r != nil {
+            log.Printf("Recovered from panic: %v", r)
+			
+            c.JSON(500, gin.H{"Error": "Internal server error"})
+        }
+    }()
 
 	txHash := c.Param("txHash")
+
+	txHashPattern := regexp.MustCompile("^0x[0-9a-fA-F]{64}$")
+
+	if txHashPattern.MatchString(txHash) == false  {
+		c.JSON(400, gin.H{"Error":"Invalid transaction hash"})
+		return
+	}
 
 	var txAndLog []models.TxAndLog
 

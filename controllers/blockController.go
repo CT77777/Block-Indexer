@@ -12,6 +12,13 @@ import (
 
 // get a limited count of blocks
 func GetBlocks(c *gin.Context) {
+	defer func() {
+        if r := recover(); r != nil {
+            log.Printf("Recovered from panic: %v", r)
+
+            c.JSON(500, gin.H{"Error": "Internal server error"})
+        }
+    }()
 
 	var blockHeaders []models.BlockHeader
 
@@ -40,6 +47,14 @@ func GetBlocks(c *gin.Context) {
 
 // get the specified block, including all transactions hash
 func GetBlockAndTxs(c *gin.Context) {
+	defer func() {
+        if r := recover(); r != nil {
+            log.Printf("Recovered from panic: %v", r)
+			
+            c.JSON(500, gin.H{"Error": "Internal server error"})
+        }
+    }()
+
 	var blockAndTx []models.BlockAndTx
 
 	number := c.Param("id")
