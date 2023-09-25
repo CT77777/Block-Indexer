@@ -149,11 +149,13 @@ func scanBlocks(start int, end int, workerCount int, batchInsertCount int) {
 
 // main execution function
 func main() {
-	start := 33585900 // start block 
-	end := 33585920 // end block
+	// parameters for scanning historical blocks
+	start := 0 // start block number
+	end := 33585920 // end block number
 	workerCountOld := 5 // worker count to scan blocks in parallel for historical blocks
 	batchInsertCountOld := 10 // total block data count will be insert into DB every I/O for historical blocks
 
+	// parameters for keeping scanning the latest blocks
 	workerCountNew := 1 // worker count to scan blocks in parallel for new blocks
 	batchInsertCountNew := 1 // total block data count will be insert into DB every I/O for new blocks
 	fetchInterval := 5 * time.Second // periodically fetching interval
