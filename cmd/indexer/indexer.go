@@ -28,6 +28,7 @@ func worker(id int, jobs <-chan int, results chan<- models.Block) {
 
 		fmt.Printf("Block# %v worker_%v\n", blockNumber, id)
 		
+		// get block data by block number
 		block, err := initializers.EthClient.BlockByNumber(context.TODO(), blockNumber)
 
 		if err != nil {
@@ -48,14 +49,16 @@ func worker(id int, jobs <-chan int, results chan<- models.Block) {
 				continue
 			}
 
-			receipt, err := initializers.EthClient.TransactionReceipt(context.TODO(), common.HexToHash(hash))
-
-			if err != nil {
-				log.Printf(`Failed to fetch event logs of Transaction %v`, hash)
-				continue
-			}
-
 			if isPending != true {
+
+				// get event logs by transaction hash
+				receipt, err := initializers.EthClient.TransactionReceipt(context.TODO(), common.HexToHash(hash))
+
+				if err != nil {
+					log.Printf(`Failed to fetch event logs of Transaction %v`, hash)
+					continue
+				}
+
 				var logs []models.Log
 
 				for _, log := range receipt.Logs {
@@ -150,9 +153,9 @@ func scanBlocks(start int, end int, workerCount int, batchInsertCount int) {
 // main execution function
 func main() {
 	// parameters for scanning historical blocks
-	start := 0 // start block number
-	end := 33585920 // end block number
-	workerCountOld := 5 // worker count to scan blocks in parallel for historical blocks
+	start := 33647000 // start block number
+	end := 33647760 // end block number
+	workerCountOld := 10 // worker count to scan blocks in parallel for historical blocks
 	batchInsertCountOld := 10 // total block data count will be insert into DB every I/O for historical blocks
 
 	// parameters for keeping scanning the latest blocks

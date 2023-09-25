@@ -1,5 +1,7 @@
 # Block-Indexer
 
+Utilize an indexer to scan the historical block data into database and listen the latest block in parallel. Then, start an API service to fetch the stored block data rapidly from database without needing to go through blockchain.
+
 ## Deployment
 
 1. Start MySQL server
