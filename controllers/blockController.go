@@ -5,15 +5,15 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/CT77777/Block-Indexer/db/models"
 	"github.com/CT77777/Block-Indexer/initializers"
+	"github.com/CT77777/Block-Indexer/models"
 	"github.com/gin-gonic/gin"
 )
 
 // get a limited count of blocks
 func GetBlocks(c *gin.Context) {
 
-	var blocks []models.Block
+	var blockHeaders []models.BlockHeader
 
 	count := c.Query("limit")
 
@@ -24,7 +24,7 @@ func GetBlocks(c *gin.Context) {
 		return
 	}
 
-	result := initializers.DB.Order("Number DESC").Limit(countInt).Find(&blocks)
+	result := initializers.DB.Table("blocks").Order("Number DESC").Limit(countInt).Find(&blockHeaders)
 
 	if result.Error != nil {
 		log.Printf("DB issue: %v", result.Error)
@@ -33,28 +33,14 @@ func GetBlocks(c *gin.Context) {
 		return 
 	}
 
-	c.JSON(200, &blocks)
-}
+	blocks := struct{Blocks []models.BlockHeader `json:"blocks"`}{Blocks: blockHeaders}
 
-type BlockAndTx struct {
-	Number uint64
-	Hash string
-	Time uint64
-	Parent_Hash string
-	Transaction string
-}
-
-type BlockAndTxs struct {
-	Number    uint64   `json:"block_num"`
-	Hash   string   `json:"block_hash"`
-	Time   uint64   `json:"block_time"`
-	Parent_Hash  string   `json:"parent_hash"`
-	Transactions []string `json:"transactions"`
+	c.JSON(200, blocks)
 }
 
 // get the specified block, including all transactions hash
 func GetBlockAndTxs(c *gin.Context) {
-	var blockAndTx []BlockAndTx
+	var blockAndTx []models.BlockAndTx
 
 	number := c.Param("id")
 
@@ -76,7 +62,7 @@ func GetBlockAndTxs(c *gin.Context) {
 		return
 	}
 
-	var blockAndTxs BlockAndTxs
+	var blockAndTxs models.BlockAndTxs
 	
 	for index, value := range blockAndTx {
 		if index == 0 {
@@ -92,37 +78,12 @@ func GetBlockAndTxs(c *gin.Context) {
 	c.JSON(200, blockAndTxs)
 }
 
-type TxAndLog struct {
-	Hash string 
-	From string 
-	To string 
-	Nonce uint64
-	Value string
-	Input_Data string 
-	Data string
-}
-
-type TxAndLogs struct {
-	Hash string `json:"tx_hash"`
-	From string `json:"from"`
-	To string `json:"to"`
-	Nonce uint64 `json:"nonce"`
-	Value string `json:"value"`
-	Input_Data string `json:"data"`
-	Logs []EventLog `json:"logs"`
-}
-
-type EventLog struct {
-	Index uint8 `json:"index"`
-	Data string `json:"data"`
-}
-
 // get the specified transaction, include all event logs
 func GetTxAndLogs(c *gin.Context) {
 
 	txHash := c.Param("txHash")
 
-	var txAndLog []TxAndLog
+	var txAndLog []models.TxAndLog
 
 	result := initializers.DB.Table("transactions").Select("transactions.*", "logs.data").Where("hash = ?", txHash).Joins("INNER JOIN logs ON transactions.id = logs.transaction_id").Scan(&txAndLog)
 
@@ -133,7 +94,7 @@ func GetTxAndLogs(c *gin.Context) {
 		return 
 	}
 
-	var txAndLogs TxAndLogs
+	var txAndLogs models.TxAndLogs
 
 	for index, value := range txAndLog {
 		if index == 0 {
@@ -145,7 +106,7 @@ func GetTxAndLogs(c *gin.Context) {
 			txAndLogs.Input_Data = value.Input_Data
 		}
 
-		var log EventLog = EventLog{Index : uint8(index), Data : value.Data}
+		var log models.EventLog = models.EventLog{Index : uint8(index), Data : value.Data}
 
 		txAndLogs.Logs = append(txAndLogs.Logs, log)
 	}

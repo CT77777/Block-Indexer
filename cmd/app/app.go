@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/CT77777/Block-Indexer/cmd/app/controllers"
+	"github.com/CT77777/Block-Indexer/controllers"
 	"github.com/CT77777/Block-Indexer/initializers"
 	"github.com/gin-gonic/gin"
 )

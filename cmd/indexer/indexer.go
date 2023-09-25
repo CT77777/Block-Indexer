@@ -8,8 +8,8 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/CT77777/Block-Indexer/db/models"
 	"github.com/CT77777/Block-Indexer/initializers"
+	"github.com/CT77777/Block-Indexer/models"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 )
